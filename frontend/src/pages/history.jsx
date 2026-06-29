@@ -28,7 +28,7 @@ export default function History() {
         }
 
         fetchHistory();
-    }, [getHistoryOfUse])
+    }, [getHistoryOfUser])
 
     let formatDate = (dateString) => {
 
