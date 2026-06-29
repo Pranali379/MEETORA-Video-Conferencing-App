@@ -22,6 +22,9 @@ app.use(express.urlencoded({limit : "40kb", extended: true}));
 
 app.use("/api/v1/users", userRoutes);
 
+app.get("/", (req, res) => {
+    res.send("MEETORA Backend is running successfully 🚀");
+});
 
 const start = async () => {
     const connectionDB = await mongoose.connect(process.env.MONGODB_URI)
