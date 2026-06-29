@@ -1,0 +1,701 @@
+/* ==========================================
+   MEETORA AUTH PAGE
+   Part 2A
+==========================================*/
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f7f8fc;
+    overflow-x:hidden;
+}
+
+/* ==========================================
+        MAIN CONTAINER
+==========================================*/
+
+.authContainer{
+    width:100%;
+    min-height:100vh;
+    display:flex;
+}
+
+/* ==========================================
+            LEFT PANEL
+==========================================*/
+
+.leftSection{
+    width:55%;
+    min-height:100vh;
+
+    background:linear-gradient(
+        135deg,
+        #1d1b45 0%,
+        #4b39c7 55%,
+        #7a5cff 100%
+    );
+
+    color:white;
+
+    padding:60px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+}
+
+/* Glow */
+
+.leftSection::before{
+    content:"";
+
+    position:absolute;
+
+    width:350px;
+    height:350px;
+
+    background:#8f7cff;
+
+    border-radius:50%;
+
+    filter:blur(120px);
+
+    top:-120px;
+    right:-80px;
+
+    opacity:.35;
+}
+
+.leftSection::after{
+
+    content:"";
+
+    position:absolute;
+
+    width:300px;
+    height:300px;
+
+    background:#4f46e5;
+
+    border-radius:50%;
+
+    filter:blur(120px);
+
+    bottom:-120px;
+    left:-80px;
+
+    opacity:.25;
+}
+
+/* ==========================================
+          LOGO
+==========================================*/
+
+.brandLogo{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    z-index:2;
+}
+
+.logoCircle{
+
+    width:60px;
+    height:60px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.15);
+
+    backdrop-filter:blur(20px);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:26px;
+}
+
+.brandLogo h2{
+
+    font-size:32px;
+
+    letter-spacing:2px;
+
+    font-weight:700;
+}
+
+/* ==========================================
+          HERO TEXT
+==========================================*/
+
+.heroContent{
+
+    margin-top:50px;
+
+    z-index:2;
+}
+
+.heroContent h1{
+
+    font-size:58px;
+
+    line-height:1.15;
+
+    font-weight:700;
+
+    margin-bottom:25px;
+}
+
+.heroContent span{
+
+    color:#FFD54F;
+}
+
+.heroContent p{
+
+    width:75%;
+
+    font-size:18px;
+
+    line-height:32px;
+
+    color:#ececec;
+}
+
+/* ==========================================
+        VIDEO MEETING CARD
+==========================================*/
+
+.meetingCard{
+
+    width:82%;
+
+    background:rgba(255,255,255,.12);
+
+    backdrop-filter:blur(25px);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    border-radius:24px;
+
+    padding:25px;
+
+    margin-top:45px;
+
+    z-index:2;
+
+    box-shadow:0 25px 60px rgba(0,0,0,.20);
+
+    transition:.4s;
+}
+
+.meetingCard:hover{
+
+    transform:translateY(-8px);
+}
+
+.meetingHeader{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-bottom:20px;
+}
+
+.meetingHeader span{
+
+    width:13px;
+    height:13px;
+
+    border-radius:50%;
+
+    background:white;
+
+    opacity:.7;
+}
+
+/* ==========================================
+        PARTICIPANTS GRID
+==========================================*/
+
+.meetingGrid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:18px;
+
+    margin-bottom:28px;
+}
+
+.participant{
+
+    height:130px;
+
+    border-radius:18px;
+
+    background:rgba(255,255,255,.12);
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:42px;
+
+    transition:.3s;
+}
+
+.participant:hover{
+
+    transform:scale(1.05);
+
+    background:rgba(255,255,255,.20);
+}
+
+.participant small{
+
+    margin-top:12px;
+
+    font-size:14px;
+
+    color:white;
+
+    letter-spacing:1px;
+}
+
+/* ==========================================
+        CALL CONTROLS
+==========================================*/
+
+.meetingControls{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:18px;
+}
+
+.meetingControls div{
+
+    width:52px;
+
+    height:52px;
+
+    border-radius:50%;
+
+    background:white;
+
+    color:#4b39c7;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    font-size:20px;
+}
+
+.meetingControls div:hover{
+
+    transform:scale(1.12);
+}
+
+.endCall{
+
+    background:#ff4d4f !important;
+
+    color:white !important;
+}
+
+/* ==========================================
+        FEATURES
+==========================================*/
+
+.featureList{
+
+    margin-top:45px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+
+    z-index:2;
+}
+
+.featureItem{
+
+    display:flex;
+
+    gap:18px;
+
+    align-items:flex-start;
+}
+
+.featureItem span{
+
+    font-size:28px;
+}
+
+.featureItem h4{
+
+    font-size:18px;
+
+    margin-bottom:4px;
+}
+
+.featureItem p{
+
+    color:#eeeeee;
+
+    font-size:15px;
+
+    line-height:24px;
+}
+
+/* ==========================================
+        RIGHT PANEL
+==========================================*/
+
+.rightSection{
+    width:45%;
+    min-height:100vh;
+    background:#f8f9fc;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:40px;
+}
+
+/* ==========================================
+        LOGIN CARD
+==========================================*/
+
+.loginCard{
+
+    width:100%;
+    max-width:460px;
+
+    background:#ffffff;
+
+    border-radius:28px;
+
+    padding:45px;
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.10);
+
+    animation:fadeUp .8s ease;
+}
+
+.avatar{
+
+    width:70px !important;
+    height:70px !important;
+
+    margin:auto !important;
+
+    background:linear-gradient(
+        135deg,
+        #6C4CF1,
+        #4F46E5
+    ) !important;
+}
+
+.loginTitle{
+
+    margin-top:20px !important;
+
+    text-align:center;
+
+    font-weight:700 !important;
+
+    color:#222;
+}
+
+.loginSubtitle{
+
+    margin-top:8px !important;
+
+    text-align:center;
+
+    color:#777;
+
+    margin-bottom:30px !important;
+}
+
+/* ==========================================
+        SIGN IN / SIGN UP BUTTONS
+==========================================*/
+
+.switchButtons{
+
+    display:flex;
+
+    gap:15px;
+
+    margin-bottom:25px;
+}
+
+.switchButtons button{
+
+    flex:1;
+
+    border-radius:12px;
+
+    text-transform:none;
+
+    font-weight:600;
+}
+
+/* ==========================================
+            FORM
+==========================================*/
+
+.formBox{
+
+    display:flex;
+
+    flex-direction:column;
+}
+
+.formBox .MuiTextField-root{
+
+    margin-bottom:18px;
+}
+
+.formBox .MuiOutlinedInput-root{
+
+    border-radius:14px;
+
+    background:white;
+}
+
+.formBox .MuiOutlinedInput-root:hover fieldset{
+
+    border-color:#6C4CF1;
+}
+
+.formBox .MuiOutlinedInput-root.Mui-focused fieldset{
+
+    border-color:#6C4CF1;
+}
+
+/* ==========================================
+        LOGIN BUTTON
+==========================================*/
+
+.loginBtn{
+
+    background:linear-gradient(
+        90deg,
+        #6C4CF1,
+        #4F46E5
+    ) !important;
+
+    padding:14px !important;
+
+    border-radius:14px !important;
+
+    font-size:16px !important;
+
+    font-weight:600 !important;
+
+    text-transform:none !important;
+
+    transition:.3s !important;
+}
+
+.loginBtn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 12px 25px rgba(108,76,241,.35);
+}
+
+/* ==========================================
+            LINKS
+==========================================*/
+
+.loginCard button:last-child{
+
+    color:#6C4CF1;
+
+    font-weight:600;
+}
+
+/* ==========================================
+            ANIMATIONS
+==========================================*/
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(40px);
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+    }
+
+}
+
+/* ==========================================
+        RESPONSIVE
+==========================================*/
+
+@media(max-width:1100px){
+
+.leftSection{
+
+    width:50%;
+
+    padding:40px;
+}
+
+.rightSection{
+
+    width:50%;
+}
+
+.heroContent h1{
+
+    font-size:46px;
+}
+
+.meetingCard{
+
+    width:100%;
+}
+
+}
+
+@media(max-width:900px){
+
+.authContainer{
+
+    flex-direction:column;
+}
+
+.leftSection{
+
+    width:100%;
+
+    min-height:auto;
+
+    padding:50px 30px;
+}
+
+.rightSection{
+
+    width:100%;
+
+    padding:50px 20px;
+}
+
+.heroContent p{
+
+    width:100%;
+}
+
+.meetingCard{
+
+    width:100%;
+}
+
+.loginCard{
+
+    max-width:500px;
+}
+
+}
+
+@media(max-width:600px){
+
+.leftSection{
+
+    padding:40px 20px;
+}
+
+.brandLogo h2{
+
+    font-size:26px;
+}
+
+.heroContent h1{
+
+    font-size:36px;
+}
+
+.heroContent p{
+
+    font-size:15px;
+
+    line-height:28px;
+}
+
+.participant{
+
+    height:100px;
+
+    font-size:32px;
+}
+
+.meetingControls div{
+
+    width:45px;
+
+    height:45px;
+}
+
+.loginCard{
+
+    padding:30px;
+}
+
+.switchButtons{
+
+    flex-direction:column;
+}
+
+}

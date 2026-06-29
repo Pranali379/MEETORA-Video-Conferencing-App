@@ -1,0 +1,117 @@
+.landingPageContainer {
+  width: 100vw;
+  height: 100vh;
+  background: url("/public/background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: white;
+}
+
+.landingPageContainer nav {
+  padding-inline: 1.2rem;
+  padding-block: 1.6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+}
+
+.landingPageContainer nav h2 {
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+
+.landingPageContainer nav .navlist {
+  display: flex;
+  gap: 1.6rem;
+  cursor: pointer;
+
+}
+
+.landingMainContainer {
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 3rem;
+  height: 80vh;
+  align-items: center;
+}
+
+.landingMainContainer>div:nth-child(1) {
+  font-size: 2.2rem;
+}
+
+.landingMainContainer>div:nth-child(1) div[role='button'] {
+  background: #D97500;
+  width: fit-content;
+  padding: 1rem;
+  border-radius: 20px;
+  margin-top: 1.9rem;
+}
+
+.landingMainContainer>div:nth-child(1) div[role='button'] a {
+  text-decoration: none;
+  color: white;
+  font-size: 1.7rem;
+}
+
+.landingMainContainer>div:nth-child(2) img {
+  height: 70vh;
+  width: auto;
+}
+
+/* ---------------- HOME PAGE ---------------- */
+
+.navBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 60px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.navBar h2{
+  color:#5B4BFF;
+  font-size:32px;
+  font-weight:700;
+  letter-spacing:1px;
+}
+
+.meetContainer{
+  min-height:calc(100vh - 80px);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:40px 80px;
+
+  background:linear-gradient(
+      135deg,
+      #f8f9ff,
+      #eef2ff,
+      #f7f8ff
+  );
+}
+
+.leftPanel{
+  width:50%;
+}
+
+.leftPanel h2{
+  font-size:55px;
+  line-height:1.2;
+  color:#1F2937;
+  margin-bottom:20px;
+}
+
+.rightPanel{
+  width:45%;
+  display:flex;
+  justify-content:center;
+}
+
+.rightPanel img{
+  width:100%;
+  max-width:520px;
+  border-radius:30px;
+}
