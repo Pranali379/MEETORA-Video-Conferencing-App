@@ -97,18 +97,6 @@ Install dependencies:
 npm install
 ```
 
-Create a `.env` file inside the backend folder.
-
-Example:
-
-```env
-PORT=8000
-
-MONGO_URI=your_mongodb_connection_string
-
-JWT_SECRET=your_secret_key
-```
-
 Start the backend server:
 
 ```bash
@@ -147,25 +135,6 @@ http://localhost:3000
 
 ---
 
-## 📸 Screenshots
-
-Add screenshots of your application here.
-
-Example:
-
-```
-Home Page
-
-Login Page
-
-Meeting Room
-
-Video Call Interface
-
-Chat Window
-```
-
----
 
 ## 🎯 Future Improvements
 
