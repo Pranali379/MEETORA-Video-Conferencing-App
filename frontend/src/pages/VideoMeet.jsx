@@ -19,7 +19,24 @@ var connections = {};
 
 const peerConfigConnections = {
     "iceServers": [
-        { "urls": "stun:stun.l.google.com:19302" }
+        { "urls": "stun:stun.l.google.com:19302" },
+        { "urls": "stun:stun1.l.google.com:19302" },
+        { "urls": "stun:stun2.l.google.com:19302" },
+        {
+            "urls": "turn:openrelay.metered.ca:80",
+            "username": "openrelayproject",
+            "credential": "openrelayproject"
+        },
+        {
+            "urls": "turn:openrelay.metered.ca:443",
+            "username": "openrelayproject",
+            "credential": "openrelayproject"
+        },
+        {
+            "urls": "turn:openrelay.metered.ca:443?transport=tcp",
+            "username": "openrelayproject",
+            "credential": "openrelayproject"
+        }
     ]
 }
 
@@ -58,15 +75,31 @@ export default function VideoMeetComponent() {
 
     let [videos, setVideos] = useState([])
 
-    // TODO
-    // if(isChrome() === false) {
+    // ✅ NEW HELPER FUNCTION — swaps tracks instead of duplicating them
+    const updateMyStream = (newStream) => {
+        window.localStream = newStream
+        localVideoref.current.srcObject = newStream
 
+        for (let id in connections) {
+            if (id === socketIdRef.current) continue
 
-    // }
-useEffect(() => {
-    getPermissions();
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+            newStream.getTracks().forEach(newTrack => {
+                const sender = connections[id].getSenders().find(
+                    s => s.track && s.track.kind === newTrack.kind
+                )
+                if (sender) {
+                    sender.replaceTrack(newTrack)
+                } else {
+                    connections[id].addTrack(newTrack, newStream)
+                }
+            })
+        }
+    }
+
+    useEffect(() => {
+        getPermissions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     let getDislayMedia = () => {
         if (screen) {
@@ -119,15 +152,15 @@ useEffect(() => {
         }
     };
 
-useEffect(() => {
-    if (video !== undefined && audio !== undefined) {
-        getUserMedia();
-    }
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [video, audio]);
+    useEffect(() => {
+        if (video !== undefined && audio !== undefined) {
+            getUserMedia();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [video, audio]);
 
 
-   
+
     let getMedia = () => {
         setVideo(videoAvailable);
         setAudio(audioAvailable);
@@ -135,31 +168,13 @@ useEffect(() => {
 
     }
 
-
-
-
+    // ✅ FIXED — uses updateMyStream instead of manual addStream/addTrack loop
     let getUserMediaSuccess = (stream) => {
         try {
             window.localStream.getTracks().forEach(track => track.stop())
         } catch (e) { console.log(e) }
 
-        window.localStream = stream
-        localVideoref.current.srcObject = stream
-
-        for (let id in connections) {
-            if (id === socketIdRef.current) continue
-
-            connections[id].addStream(window.localStream)
-
-            connections[id].createOffer().then((description) => {
-                console.log(description)
-                connections[id].setLocalDescription(description)
-                    .then(() => {
-                        socketRef.current.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
-                    })
-                    .catch(e => console.log(e))
-            })
-        }
+        updateMyStream(stream)
 
         stream.getTracks().forEach(track => track.onended = () => {
             setVideo(false);
@@ -171,20 +186,7 @@ useEffect(() => {
             } catch (e) { console.log(e) }
 
             let blackSilence = (...args) => new MediaStream([black(...args), silence()])
-            window.localStream = blackSilence()
-            localVideoref.current.srcObject = window.localStream
-
-            for (let id in connections) {
-                connections[id].addStream(window.localStream)
-
-                connections[id].createOffer().then((description) => {
-                    connections[id].setLocalDescription(description)
-                        .then(() => {
-                            socketRef.current.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
-                        })
-                        .catch(e => console.log(e))
-                })
-            }
+            updateMyStream(blackSilence())
         })
     }
 
@@ -202,32 +204,14 @@ useEffect(() => {
         }
     }
 
-
-
-
-
+    // ✅ FIXED — uses updateMyStream instead of manual addStream/addTrack loop
     let getDislayMediaSuccess = (stream) => {
         console.log("HERE")
         try {
             window.localStream.getTracks().forEach(track => track.stop())
         } catch (e) { console.log(e) }
 
-        window.localStream = stream
-        localVideoref.current.srcObject = stream
-
-        for (let id in connections) {
-            if (id === socketIdRef.current) continue
-
-            connections[id].addStream(window.localStream)
-
-            connections[id].createOffer().then((description) => {
-                connections[id].setLocalDescription(description)
-                    .then(() => {
-                        socketRef.current.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
-                    })
-                    .catch(e => console.log(e))
-            })
-        }
+        updateMyStream(stream)
 
         stream.getTracks().forEach(track => track.onended = () => {
             setScreen(false)
@@ -297,8 +281,8 @@ useEffect(() => {
                         }
                     }
 
-                    // Wait for their video stream
-                    connections[socketListId].onaddstream = (event) => {
+                    // ✅ FIXED — ontrack instead of deprecated onaddstream
+                    connections[socketListId].ontrack = (event) => {
                         console.log("BEFORE:", videoRef.current);
                         console.log("FINDING ID: ", socketListId);
 
@@ -307,20 +291,18 @@ useEffect(() => {
                         if (videoExists) {
                             console.log("FOUND EXISTING");
 
-                            // Update the stream of the existing video
                             setVideos(videos => {
                                 const updatedVideos = videos.map(video =>
-                                    video.socketId === socketListId ? { ...video, stream: event.stream } : video
+                                    video.socketId === socketListId ? { ...video, stream: event.streams[0] } : video
                                 );
                                 videoRef.current = updatedVideos;
                                 return updatedVideos;
                             });
                         } else {
-                            // Create a new video
                             console.log("CREATING NEW");
                             let newVideo = {
                                 socketId: socketListId,
-                                stream: event.stream,
+                                stream: event.streams[0],
                                 autoplay: true,
                                 playsinline: true
                             };
@@ -333,14 +315,17 @@ useEffect(() => {
                         }
                     };
 
-
-                    // Add the local video stream
+                    // ✅ FIXED — addTrack instead of deprecated addStream
                     if (window.localStream !== undefined && window.localStream !== null) {
-                        connections[socketListId].addStream(window.localStream)
+                        window.localStream.getTracks().forEach(track => {
+                            connections[socketListId].addTrack(track, window.localStream)
+                        })
                     } else {
                         let blackSilence = (...args) => new MediaStream([black(...args), silence()])
                         window.localStream = blackSilence()
-                        connections[socketListId].addStream(window.localStream)
+                        window.localStream.getTracks().forEach(track => {
+                            connections[socketListId].addTrack(track, window.localStream)
+                        })
                     }
                 })
 
@@ -348,8 +333,11 @@ useEffect(() => {
                     for (let id2 in connections) {
                         if (id2 === socketIdRef.current) continue
 
+                        // ✅ FIXED — addTrack instead of deprecated addStream
                         try {
-                            connections[id2].addStream(window.localStream)
+                            window.localStream.getTracks().forEach(track => {
+                                connections[id2].addTrack(track, window.localStream)
+                            })
                         } catch (e) { }
 
                         connections[id2].createOffer().then((description) => {
@@ -389,12 +377,12 @@ useEffect(() => {
         // getUserMedia();
     }
 
-useEffect(() => {
-    if (screen !== undefined) {
-        getDislayMedia();
-    }
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [screen]);
+    useEffect(() => {
+        if (screen !== undefined) {
+            getDislayMedia();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [screen]);
     let handleScreen = () => {
         setScreen(!screen);
     }
@@ -407,7 +395,7 @@ useEffect(() => {
         window.location.href = "/"
     }
 
-   
+
 
     const addMessage = (data, sender, socketIdSender) => {
         setMessages((prevMessages) => [
@@ -429,7 +417,7 @@ useEffect(() => {
         // this.setState({ message: "", sender: username })
     }
 
-    
+
     let connect = () => {
         setAskForUsername(false);
         getMedia();
@@ -459,36 +447,36 @@ useEffect(() => {
                 <div className={styles.meetVideoContainer}>
                     <div className={styles.meetingHeader}>
 
-    <div className={styles.logoSection}>
-        <h2>🎥 MEETORA</h2>
-    </div>
+                        <div className={styles.logoSection}>
+                            <h2>🎥 MEETORA</h2>
+                        </div>
 
-    <div className={styles.meetingInfo}>
+                        <div className={styles.meetingInfo}>
 
-        <div>
-            <small>Meeting Code</small>
-            <h3>{window.location.pathname.split("/").pop()}</h3>
-        </div>
+                            <div>
+                                <small>Meeting Code</small>
+                                <h3>{window.location.pathname.split("/").pop()}</h3>
+                            </div>
 
-        <div>
-            <small>Participants</small>
-            <h3>{videos.length + 1}</h3>
-        </div>
+                            <div>
+                                <small>Participants</small>
+                                <h3>{videos.length + 1}</h3>
+                            </div>
 
-    </div>
+                        </div>
 
-</div>
+                    </div>
 
                     {showModal ? <div className={styles.chatPanel}>
 
                         <div className={styles.chatContainer}>
                             <div className={styles.chatHeader}>
 
-<h2>Chat</h2>
+                                <h2>Chat</h2>
 
-<p>{messages.length} Messages</p>
+                                <p>{messages.length} Messages</p>
 
-</div>
+                            </div>
 
                             <div className={styles.chattingDisplay}>
 
@@ -507,20 +495,20 @@ useEffect(() => {
                             </div>
 
                             <div className={styles.chattingArea}>
-                               <TextField
-fullWidth
-placeholder="Type your message..."
-value={message}
-onChange={(e)=>setMessage(e.target.value)}
-/>
+                                <TextField
+                                    fullWidth
+                                    placeholder="Type your message..."
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                />
 
-<Button
-variant="contained"
-onClick={sendMessage}
-className={styles.sendBtn}
->
-Send
-</Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={sendMessage}
+                                    className={styles.sendBtn}
+                                >
+                                    Send
+                                </Button>
                             </div>
 
 
@@ -528,12 +516,12 @@ Send
                     </div> : <></>}
 
 
-                      <div className={styles.toolbar}>
+                    <div className={styles.toolbar}>
                         <IconButton onClick={handleVideo} style={{ color: "white" }}>
                             {(video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
                         </IconButton>
                         <IconButton onClick={handleEndCall} style={{ color: "red" }}>
-                            <CallEndIcon  />
+                            <CallEndIcon />
                         </IconButton>
                         <IconButton onClick={handleAudio} style={{ color: "white" }}>
                             {audio === true ? <MicIcon /> : <MicOffIcon />}
@@ -554,41 +542,41 @@ Send
 
                     <div className={styles.localVideoCard}>
 
-    <span>You</span>
+                        <span>You</span>
 
-    <video
-        ref={localVideoref}
-        autoPlay
-        muted
-        className={styles.meetUserVideo}
-    />
+                        <video
+                            ref={localVideoref}
+                            autoPlay
+                            muted
+                            className={styles.meetUserVideo}
+                        />
 
-</div> 
+                    </div>
 
-                   <div className={styles.conferenceView}>
+                    <div className={styles.conferenceView}>
 
-    {videos.map((video) => (
+                        {videos.map((video) => (
 
-        <div
-            key={video.socketId}
-            className={styles.videoCard}
-        >
+                            <div
+                                key={video.socketId}
+                                className={styles.videoCard}
+                            >
 
-            <video
-                ref={(ref) => {
-                    if (ref && video.stream) {
-                        ref.srcObject = video.stream;
-                    }
-                }}
-                autoPlay
-                playsInline
-            />
+                                <video
+                                    ref={(ref) => {
+                                        if (ref && video.stream) {
+                                            ref.srcObject = video.stream;
+                                        }
+                                    }}
+                                    autoPlay
+                                    playsInline
+                                />
 
-        </div>
+                            </div>
 
-    ))}
+                        ))}
 
-</div> 
+                    </div>
                 </div>
 
             }
