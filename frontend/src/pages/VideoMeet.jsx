@@ -49,38 +49,24 @@ export default function VideoMeetComponent() {
 
     var socketRef = useRef();
     let socketIdRef = useRef();
-
     let localVideoref = useRef();
 
     let [videoAvailable, setVideoAvailable] = useState(true);
-
     let [audioAvailable, setAudioAvailable] = useState(true);
-
     let [video, setVideo] = useState([]);
-
     let [audio, setAudio] = useState();
-
     let [screen, setScreen] = useState();
-
     let [showModal, setModal] = useState(true);
-
     let [screenAvailable, setScreenAvailable] = useState();
-
     let [messages, setMessages] = useState([])
-
     let [message, setMessage] = useState("");
-
     let [newMessages, setNewMessages] = useState(3);
-
     let [askForUsername, setAskForUsername] = useState(true);
-
     let [username, setUsername] = useState("");
-
     const videoRef = useRef([])
-
     let [videos, setVideos] = useState([])
 
-    // ✅ NEW HELPER FUNCTION — swaps tracks instead of duplicating them
+    // ✅ swaps tracks instead of duplicating them
     const updateMyStream = (newStream) => {
         window.localStream = newStream
         localVideoref.current.srcObject = newStream
@@ -122,19 +108,15 @@ export default function VideoMeetComponent() {
             const videoPermission = await navigator.mediaDevices.getUserMedia({ video: true });
             if (videoPermission) {
                 setVideoAvailable(true);
-                console.log('Video permission granted');
             } else {
                 setVideoAvailable(false);
-                console.log('Video permission denied');
             }
 
             const audioPermission = await navigator.mediaDevices.getUserMedia({ audio: true });
             if (audioPermission) {
                 setAudioAvailable(true);
-                console.log('Audio permission granted');
             } else {
                 setAudioAvailable(false);
-                console.log('Audio permission denied');
             }
 
             if (navigator.mediaDevices.getDisplayMedia) {
@@ -164,16 +146,12 @@ export default function VideoMeetComponent() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [video, audio]);
 
-
-
     let getMedia = () => {
         setVideo(videoAvailable);
         setAudio(audioAvailable);
         connectToSocketServer();
-
     }
 
-    // ✅ FIXED — uses updateMyStream instead of manual addStream/addTrack loop
     let getUserMediaSuccess = (stream) => {
         try {
             window.localStream.getTracks().forEach(track => track.stop())
@@ -209,7 +187,6 @@ export default function VideoMeetComponent() {
         }
     }
 
-    // ✅ FIXED — uses updateMyStream instead of manual addStream/addTrack loop
     let getDislayMediaSuccess = (stream) => {
         console.log("HERE")
         try {
@@ -231,37 +208,33 @@ export default function VideoMeetComponent() {
             localVideoref.current.srcObject = window.localStream
 
             getUserMedia()
-
         })
     }
 
-let gotMessageFromServer = (fromId, message) => {
-    var signal = JSON.parse(message)
+    let gotMessageFromServer = (fromId, message) => {
+        var signal = JSON.parse(message)
 
-    if (fromId !== socketIdRef.current) {
-        if (signal.sdp) {
-            connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp))
-                .then(() => {
-                    if (signal.sdp.type === 'offer') {
-                        connections[fromId].createAnswer().then((description) => {
-                            connections[fromId].setLocalDescription(description).then(() => {
-                                socketRef.current.emit('signal', fromId, JSON.stringify({ 'sdp': connections[fromId].localDescription }))
-                            }).catch(e => console.log("Error setting local description:", e))
-                        }).catch(e => console.log("Error creating answer:", e))
-                    }
-                })
-                .catch(e => console.log("Error setting remote description:", e))
-        }
+        if (fromId !== socketIdRef.current) {
+            if (signal.sdp) {
+                connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp))
+                    .then(() => {
+                        if (signal.sdp.type === 'offer') {
+                            connections[fromId].createAnswer().then((description) => {
+                                connections[fromId].setLocalDescription(description).then(() => {
+                                    socketRef.current.emit('signal', fromId, JSON.stringify({ 'sdp': connections[fromId].localDescription }))
+                                }).catch(e => console.log("Error setting local description:", e))
+                            }).catch(e => console.log("Error creating answer:", e))
+                        }
+                    })
+                    .catch(e => console.log("Error setting remote description:", e))
+            }
 
-        if (signal.ice) {
-            connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice))
-                .catch(e => console.log("Error adding ICE candidate:", e))
+            if (signal.ice) {
+                connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice))
+                    .catch(e => console.log("Error adding ICE candidate:", e))
+            }
         }
     }
-}
-
-
-
 
     let connectToSocketServer = () => {
         socketRef.current = io.connect(server_url, { secure: false })
@@ -282,23 +255,17 @@ let gotMessageFromServer = (fromId, message) => {
                 clients.forEach((socketListId) => {
 
                     connections[socketListId] = new RTCPeerConnection(peerConfigConnections)
-                    // Wait for their ice candidate       
+
                     connections[socketListId].onicecandidate = function (event) {
                         if (event.candidate != null) {
                             socketRef.current.emit('signal', socketListId, JSON.stringify({ 'ice': event.candidate }))
                         }
                     }
 
-                    // ✅ FIXED — ontrack instead of deprecated onaddstream
                     connections[socketListId].ontrack = (event) => {
-                        console.log("BEFORE:", videoRef.current);
-                        console.log("FINDING ID: ", socketListId);
-
                         let videoExists = videoRef.current.find(video => video.socketId === socketListId);
 
                         if (videoExists) {
-                            console.log("FOUND EXISTING");
-
                             setVideos(videos => {
                                 const updatedVideos = videos.map(video =>
                                     video.socketId === socketListId ? { ...video, stream: event.streams[0] } : video
@@ -307,7 +274,6 @@ let gotMessageFromServer = (fromId, message) => {
                                 return updatedVideos;
                             });
                         } else {
-                            console.log("CREATING NEW");
                             let newVideo = {
                                 socketId: socketListId,
                                 stream: event.streams[0],
@@ -323,7 +289,6 @@ let gotMessageFromServer = (fromId, message) => {
                         }
                     };
 
-                    // ✅ FIXED — addTrack instead of deprecated addStream
                     if (window.localStream !== undefined && window.localStream !== null) {
                         window.localStream.getTracks().forEach(track => {
                             connections[socketListId].addTrack(track, window.localStream)
@@ -335,18 +300,11 @@ let gotMessageFromServer = (fromId, message) => {
                             connections[socketListId].addTrack(track, window.localStream)
                         })
                     }
-                })
+                }) // ← closes clients.forEach
 
                 if (id === socketIdRef.current) {
                     for (let id2 in connections) {
                         if (id2 === socketIdRef.current) continue
-
-                        // ✅ FIXED — addTrack instead of deprecated addStream
-                        try {
-                            window.localStream.getTracks().forEach(track => {
-                                connections[id2].addTrack(track, window.localStream)
-                            })
-                        } catch (e) { }
 
                         connections[id2].createOffer().then((description) => {
                             connections[id2].setLocalDescription(description)
@@ -356,10 +314,13 @@ let gotMessageFromServer = (fromId, message) => {
                                 .catch(e => console.log(e))
                         })
                     }
-                }
-            })
-        })
-    }
+                } // ← closes if (id === socketIdRef.current)
+
+            }) // ← closes user-joined
+
+        }) // ← closes connect
+
+    } // ← closes connectToSocketServer
 
     let silence = () => {
         let ctx = new AudioContext()
@@ -369,6 +330,7 @@ let gotMessageFromServer = (fromId, message) => {
         ctx.resume()
         return Object.assign(dst.stream.getAudioTracks()[0], { enabled: false })
     }
+
     let black = ({ width = 640, height = 480 } = {}) => {
         let canvas = Object.assign(document.createElement("canvas"), { width, height })
         canvas.getContext('2d').fillRect(0, 0, width, height)
@@ -378,11 +340,10 @@ let gotMessageFromServer = (fromId, message) => {
 
     let handleVideo = () => {
         setVideo(!video);
-        // getUserMedia();
     }
+
     let handleAudio = () => {
         setAudio(!audio)
-        // getUserMedia();
     }
 
     useEffect(() => {
@@ -391,6 +352,7 @@ let gotMessageFromServer = (fromId, message) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [screen]);
+
     let handleScreen = () => {
         setScreen(!screen);
     }
@@ -403,8 +365,6 @@ let gotMessageFromServer = (fromId, message) => {
         window.location.href = "/"
     }
 
-
-
     const addMessage = (data, sender, socketIdSender) => {
         setMessages((prevMessages) => [
             ...prevMessages,
@@ -415,82 +375,53 @@ let gotMessageFromServer = (fromId, message) => {
         }
     };
 
-
-
     let sendMessage = () => {
-        console.log(socketRef.current);
         socketRef.current.emit('chat-message', message, username)
         setMessage("");
-
-        // this.setState({ message: "", sender: username })
     }
-
 
     let connect = () => {
         setAskForUsername(false);
         getMedia();
     }
 
-
     return (
         <div>
-
             {askForUsername === true ?
-
                 <div>
-
-
                     <h2>Enter into Lobby </h2>
                     <TextField id="outlined-basic" label="Username" value={username} onChange={e => setUsername(e.target.value)} variant="outlined" />
                     <Button variant="contained" onClick={connect}>Connect</Button>
-
-
                     <div>
                         <video ref={localVideoref} autoPlay muted></video>
                     </div>
-
-                </div> :
-
-
+                </div>
+                :
                 <div className={styles.meetVideoContainer}>
                     <div className={styles.meetingHeader}>
-
                         <div className={styles.logoSection}>
                             <h2>🎥 MEETORA</h2>
                         </div>
-
                         <div className={styles.meetingInfo}>
-
                             <div>
                                 <small>Meeting Code</small>
                                 <h3>{window.location.pathname.split("/").pop()}</h3>
                             </div>
-
                             <div>
                                 <small>Participants</small>
                                 <h3>{videos.length + 1}</h3>
                             </div>
-
                         </div>
-
                     </div>
 
                     {showModal ? <div className={styles.chatPanel}>
-
                         <div className={styles.chatContainer}>
                             <div className={styles.chatHeader}>
-
                                 <h2>Chat</h2>
-
                                 <p>{messages.length} Messages</p>
-
                             </div>
-
                             <div className={styles.chattingDisplay}>
-
                                 {messages.length !== 0 ? messages.map((item, index) => {
-
-                                    console.log(messages)
                                     return (
                                         <div style={{ marginBottom: "20px" }} key={index}>
                                             <p style={{ fontWeight: "bold" }}>{item.sender}</p>
@@ -498,10 +429,7 @@ let gotMessageFromServer = (fromId, message) => {
                                         </div>
                                     )
                                 }) : <p>No Messages Yet</p>}
-
-
                             </div>
-
                             <div className={styles.chattingArea}>
                                 <TextField
                                     fullWidth
@@ -509,20 +437,12 @@ let gotMessageFromServer = (fromId, message) => {
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                 />
-
-                                <Button
-                                    variant="contained"
-                                    onClick={sendMessage}
-                                    className={styles.sendBtn}
-                                >
+                                <Button variant="contained" onClick={sendMessage} className={styles.sendBtn}>
                                     Send
                                 </Button>
                             </div>
-
-
                         </div>
                     </div> : <></>}
-
 
                     <div className={styles.toolbar}>
                         <IconButton onClick={handleVideo} style={{ color: "white" }}>
@@ -534,42 +454,30 @@ let gotMessageFromServer = (fromId, message) => {
                         <IconButton onClick={handleAudio} style={{ color: "white" }}>
                             {audio === true ? <MicIcon /> : <MicOffIcon />}
                         </IconButton>
-
                         {screenAvailable === true ?
                             <IconButton onClick={handleScreen} style={{ color: "white" }}>
                                 {screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
                             </IconButton> : <></>}
-
                         <Badge badgeContent={newMessages} max={999} color='orange'>
                             <IconButton onClick={() => setModal(!showModal)} style={{ color: "white" }}>
-                                <ChatIcon />                        </IconButton>
+                                <ChatIcon />
+                            </IconButton>
                         </Badge>
-
                     </div>
 
-
                     <div className={styles.localVideoCard}>
-
                         <span>You</span>
-
                         <video
                             ref={localVideoref}
                             autoPlay
                             muted
                             className={styles.meetUserVideo}
                         />
-
                     </div>
 
                     <div className={styles.conferenceView}>
-
                         {videos.map((video) => (
-
-                            <div
-                                key={video.socketId}
-                                className={styles.videoCard}
-                            >
-
+                            <div key={video.socketId} className={styles.videoCard}>
                                 <video
                                     ref={(ref) => {
                                         if (ref && video.stream) {
@@ -579,16 +487,11 @@ let gotMessageFromServer = (fromId, message) => {
                                     autoPlay
                                     playsInline
                                 />
-
                             </div>
-
                         ))}
-
                     </div>
                 </div>
-
             }
-
         </div>
     )
 }
